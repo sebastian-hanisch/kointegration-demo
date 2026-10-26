@@ -41,7 +41,7 @@ def test_adaptation_verdict_names_who_adapts():
 
 def test_difference_verdict_depends_on_the_short_term_coupling():
     kind, text = ev.verdict_difference(_ecm(gamma=0.0, r_diff=0.08, sig_diff=False))
-    assert "r = 0,08, nicht signifikant." in text and "bei einer Beziehung ohne kurzfristige Kopplung sehen sie fast nichts." in text
+    assert "r = 0,08, nicht signifikant." in text and "bei einer Beziehung ohne kurzfristige Kopplung sehen sie wenig, am wenigsten, wenn sich nur ein Partner anpasst." in text
     text = ev.verdict_difference(_ecm(gamma=0.5, r_diff=0.46, sig_diff=True))[1]
     assert "r = 0,46, signifikant." in text and "ganz unabhängig davon, ob es eine langfristige Beziehung gibt." in text
 

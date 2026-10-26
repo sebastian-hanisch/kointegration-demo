@@ -74,7 +74,7 @@ with st.expander("So funktioniert es", expanded=True):
 | Begriff | Was er hier bedeutet |
 |---|---|
 | **Irrfahrt, Einheitswurzel** | Eine Reihe, die sich von selbst nirgends hinzieht: jede Woche kommt eine Neuerung dazu. Der **Dickey–Fuller-Test** fragt, ob sie doch zurückgezogen wird (stationär). |
-| **Kointegration, Abstand** | Zwei Irrfahrten x und y sind kointegriert, wenn der **Abstand** z = y − β x stationär ist: sie wandern zusammen. Das **Anpassungstempo** a sagt, wie schnell der Abstand zurückgezogen wird (a = 0: unabhängig). |
+| **Kointegration, Abstand** | Zwei Irrfahrten x und y sind kointegriert, wenn der **Abstand** z = y − β x stationär ist: sie wandern zusammen. Das **Anpassungstempo** a sagt, wie schnell der Abstand zurückgezogen wird (a = 0: keine Anpassung; mit γ = 0 unabhängig). |
 | **Engle–Granger-Test** | Regression von y auf x, dann Dickey–Fuller-Test am Rest. Die **kritischen Werte** kommen aus einer Simulation unabhängiger Irrfahrten mit genau dieser Wochenzahl: die t-Verteilung gilt hier nicht. |
 | **Fehlerkorrektur** | Wer zieht den Abstand zurück? Regression von Δy und Δx auf den Rest der Vorwoche: y, x oder beide. Der Partner, der sich nicht anpasst, führt. |
 | **Test auf die Differenzen** | Das Gegenmittel aus Stück 4: er sieht die Bewegung **derselben Woche** und verliert die langfristige Beziehung. |
@@ -96,7 +96,7 @@ with st.sidebar:
     world = st.selectbox("Welt", list(C.WORLDS), format_func=C.WORLDS.get, key="world_select", help="Fehlerkorrektur: zwei Irrfahrten mit gemeinsamem Abstand. Gekoppelt: x wirkt auf y. Verzögerte Ursache: eine verborgene Reihe, x wirkt nie auf y.")
     t = st.select_slider("Wochen T", options=C.T_OPTIONS, key="t_select", help="Länge der Reihen. Die kritischen Werte werden für genau dieses T simuliert.")
     st.markdown("**Fehlerkorrektur**")
-    a_ = st.slider("Anpassungstempo a", *bounds("a_slider"), step=0.05, key="a_slider", format="%.2f", help="0 = unabhängige Irrfahrten; je größer, desto schneller wird der Abstand zurückgezogen (Autokorrelation 1 − a).")
+    a_ = st.slider("Anpassungstempo a", *bounds("a_slider"), step=0.05, key="a_slider", format="%.2f", help="0 = keine Anpassung (mit γ = 0 unabhängige Irrfahrten); je größer, desto schneller wird der Abstand zurückgezogen (Autokorrelation 1 − a).")
     share = st.select_slider("Wer passt sich an", options=list(C.SHARES), format_func=C.SHARES.get, key="share_select", help="y, beide je zur Hälfte oder x zieht den Abstand zurück.")
     beta = st.select_slider("Faktor β des Abstands", options=C.BETA_OPTIONS, key="beta_select", help="Abstand z = y − β x; die Regression schätzt β.")
     gamma = st.slider("Kurzfristige Kopplung γ", *bounds("gamma_slider"), step=0.1, key="gamma_slider", format="%.1f", help="Anteil der x-Neuerung, der in derselben Woche auch y bewegt.")
@@ -120,7 +120,7 @@ st.markdown("## 🎯 Ergebnis")
 cols = st.columns(2)
 if world == "ecm":
     eg = a.row("eg")
-    cols[0].metric("Naiver Test auf r", de(a.row("naive").value), help=f"{a.row('naive').decision}; er ist bei Irrfahrten fast immer „signifikant“.")
+    cols[0].metric("Naiver Test auf r", de(a.row("naive").value), help=f"{a.row('naive').decision}; er ist bei unabhängigen Irrfahrten in drei von vier Läufen „signifikant“ (T = 104).")
     cols[1].metric("Engle–Granger t", de(eg.value), help=f"Schwelle {de(eg.threshold)}: {eg.decision}. Wahrheit: {eg.truth}.")
     cols = st.columns(2)
     cols[0].metric("α̂_y (y passt sich an)", de(a.row("alpha_y").value), help=f"{a.row('alpha_y').decision}; wahr {a.row('alpha_y').truth}.")
@@ -171,7 +171,7 @@ if grid is not None:
     e1_t = st.selectbox("Wochen T für das Verdikt", list(C.E1_TS), key="e1_t")
     kind, text = ev.verdict_e1(grid["power"], e1_t)
     getattr(st, kind)(text)
-    st.caption("Der naive Test sagt bei keiner Beziehung und bei echter Beziehung „signifikant“. Der Engle–Granger-Test trennt beides, braucht aber Zeit: bei langsamer Anpassung bleibt er lange blind.")
+    st.caption("Der naive Test sagt ohne Beziehung bei T = 104 in drei von vier Läufen (76,1 %) und bei echter Beziehung (a = 0,2) in 99,5 % „signifikant“: er trennt beides nicht. Der Engle–Granger-Test trennt beides, braucht aber Zeit: bei langsamer Anpassung bleibt er lange blind.")
 
 st.markdown("---")
 
@@ -201,7 +201,7 @@ if grid is not None:
     e3_a = e3c2.selectbox("Anpassungstempo a", list(C.E3_AS), index=1, key="e3_a", format_func=n_text)
     kind, text = ev.verdict_e3(grid["diff"], e3_gamma, e3_a)
     getattr(st, kind)(text)
-    st.caption("Differenzen beantworten „bewegen sie sich in derselben Woche zusammen?“, Engle–Granger „zieht der Abstand sie zurück?“. Das Mittel gegen Scheinkorrelation aus Stück 4 wirft die langfristige Beziehung weg.")
+    st.caption("Differenzen beantworten „bewegen sie sich in derselben Woche zusammen?“, Engle–Granger „zieht der Abstand sie zurück?“. Das Mittel gegen Scheinkorrelation aus Stück 4 wirft die langfristige Beziehung weitgehend weg, wenn nur ein Partner sich anpasst.")
 
 st.markdown("---")
 
@@ -217,7 +217,7 @@ if grid is not None:
     st.plotly_chart(build_e4(grid["adapt"], e4_t, e4_a), width="stretch", key="e4_chart")
     kind, text = ev.verdict_e4(ev.find(grid["adapt"], T=e4_t, a=e4_a, share=e4_share))
     getattr(st, kind)(text)
-    st.caption("Der führende Partner bleibt bei rund 5 % „signifikant“; die Schätzer der Anpassung liegen bei kurzen Reihen weiter von null weg als die Wahrheit, weil der Rest aus denselben Daten geschätzt ist.")
+    st.caption("Der führende Partner bleibt bei 5 bis 7 % (nur y passt sich an) bzw. 8 bis 18 % (nur x passt sich an) „signifikant“; α̂_y liegt bei kurzen Reihen weiter von null weg als die Wahrheit, zum Teil, weil der Rest aus denselben Daten geschätzt ist.")
 
 st.markdown("---")
 
@@ -243,7 +243,7 @@ if grid is not None:
     e6_k = st.selectbox("Klassen k für das Verdikt", list(C.E6_KS), key="e6_k")
     kind, text = ev.verdict_e6(grid["bias"], e6_k)
     getattr(st, kind)(text)
-    st.caption("Der Plug-in-Schätzer meldet bei kleinem n Information, wo keine ist: größer als die exakte Transferentropie einer echten, mittleren Kopplung. Jede Plug-in-Schätzung braucht deshalb einen Permutationstest.")
+    st.caption("Der Plug-in-Schätzer meldet bei kleinem n Information, wo keine ist: bei 100 Wochen ohne Kopplung im Mittel 0,07 nats, mit echter Kopplung 0,2 nur 0,09. Bei kleinem n braucht die Plug-in-Schätzung deshalb eine Korrektur, etwa einen Permutationstest (der hier wenig Macht hat).")
 
 st.markdown("---")
 
@@ -290,7 +290,7 @@ $$ \Delta x_t = \frac{a(1-s)}{\beta}\, z_{t-1} + \varepsilon^x_t, \qquad \Delta 
 
 | Symbol | Bedeutung |
 |---|---|
-| $a$ | Anpassungstempo; $a = 0$ sind unabhängige Irrfahrten |
+| $a$ | Anpassungstempo; $a = 0$: nicht kointegriert, mit $\gamma = 0$ unabhängige Irrfahrten |
 | $\hat u_t$ | Rest der Regression von $y$ auf $x$ |
 | $\gamma_{DF}$ | Koeffizient im Dickey–Fuller-Test |
 

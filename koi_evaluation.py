@@ -292,7 +292,7 @@ def verdict_adapt(a: Analysis):
 def verdict_difference(a: Analysis):
     s, ex = a.settings, a.extra
     state = "signifikant" if ex["sig_diff"] else "nicht signifikant"
-    note = ("Differenzen zeigen die Bewegung derselben Woche, nicht das Zurückziehen des Abstands: bei einer Beziehung ohne kurzfristige Kopplung sehen sie fast nichts."
+    note = ("Differenzen zeigen die Bewegung derselben Woche, nicht das Zurückziehen des Abstands: bei einer Beziehung ohne kurzfristige Kopplung sehen sie wenig, am wenigsten, wenn sich nur ein Partner anpasst."
             if s.gamma == 0.0 else "Die kurzfristige Kopplung macht die Differenzen „signifikant“, ganz unabhängig davon, ob es eine langfristige Beziehung gibt.")
     return "info", f"Test auf r der Differenzen: r = {de(ex['r_diff'])}, {state}. {note}"
 
