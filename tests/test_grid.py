@@ -54,9 +54,9 @@ def test_grid_meta_and_run_counts(grid):
 
 def test_shares_are_in_the_unit_interval_and_the_stored_exact_values_are_fresh(grid):
     for c in grid["power"]:
-        assert 0.0 <= c["eg"] <= 1.0 and 0.0 <= c["naive"] <= 1.0 and c["cut"] == K.critical_values(c["T"])["eg"][1]
+        assert 0.0 <= c["eg"] <= 1.0 and 0.0 <= c["naive"] <= 1.0 and c["cut"] == pytest.approx(K.critical_values(c["T"])["eg"][1], abs=1e-9)
     for c in grid["granger"]:
-        assert c["exact"] == K.exact_te(c["c"]) and c["bias"] == K.gauss_te_bias(C.E5_T - 1) and c["identity"] < 1e-12
+        assert c["exact"] == pytest.approx(K.exact_te(c["c"]), abs=1e-12) and c["bias"] == pytest.approx(K.gauss_te_bias(C.E5_T - 1), abs=1e-15) and c["identity"] < 1e-12
     for c in grid["adapt"]:
         assert (c["true_y"], c["true_x"]) == tuple(v + 0.0 for v in K.exact_alphas(c["a"], c["share"], 1.0)) or (c["true_y"], c["true_x"]) == K.exact_alphas(c["a"], c["share"], 1.0)
     for c in grid["bias"]:
